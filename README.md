@@ -1,14 +1,12 @@
 # Flight Operations Pipeline — Design Document
 
-> **Status: design stage. No code has been written yet.**
+> **Status: design stage.**
 >
 > This repository currently contains the architecture, data source
 > research, and build plan for a medallion-architecture pipeline on
 > Databricks. It is published as a design document so the reasoning is
-> tracked from the start. Nothing here should be read as completed work,
-> and it is not listed as a project on my CV until it runs.
+> tracked from the start.
 >
-> Progress is tracked in [`docs/build_plan.md`](docs/build_plan.md).
 
 ---
 
