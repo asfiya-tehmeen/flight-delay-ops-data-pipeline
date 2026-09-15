@@ -1,0 +1,17 @@
+# Raw data is downloaded, not committed
+data/
+*.csv
+*.zip
+*.parquet
+
+# Databricks notebook exports
+*.dbc
+
+# Local secrets - never commit tokens
+.env
+.databrickscfg
+
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
