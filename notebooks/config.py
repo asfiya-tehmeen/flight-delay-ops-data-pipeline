@@ -19,6 +19,18 @@ REFERENCE_DIR = f"{VOLUME_ROOT}/reference"  # OpenFlights airports.dat
 START_DATE = "2024-01-01"
 END_DATE = "2024-01-31"
 
+# Flight dates are LOCAL, weather is UTC. Departures late on the last local day
+# fall on the next UTC day (US evenings), and early on the first local day can
+# fall on the previous UTC day (Guam is UTC+10). Pad one day each side.
+from datetime import date, timedelta
+WEATHER_START_DATE = str(date.fromisoformat(START_DATE) - timedelta(days=1))
+WEATHER_END_DATE = str(date.fromisoformat(END_DATE) + timedelta(days=1))
+WEATHER_EXPECTED_HOURS = (
+    (date.fromisoformat(WEATHER_END_DATE) - date.fromisoformat(WEATHER_START_DATE)).days + 1) * 24
+
+# ASSUMPTION: minimum share of flights that must find origin weather.
+WEATHER_HIT_RATE_MIN = 0.995
+
 # ASSUMPTION: BTS convention, a flight is on time if it arrives < 15 min late.
 ON_TIME_THRESHOLD_MIN = 15
 

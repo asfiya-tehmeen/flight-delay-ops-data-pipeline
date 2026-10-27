@@ -52,7 +52,7 @@ origins = {r[0] for r in spark.table(f"{BRONZE}.flights_raw").select("Origin").d
 held = set()
 if spark.catalog.tableExists(WEATHER):
     held = {r[0] for r in spark.table(WEATHER)
-            .filter((F.col("start_date") == START_DATE) & (F.col("end_date") == END_DATE))
+            .filter((F.col("start_date") == WEATHER_START_DATE) & (F.col("end_date") == WEATHER_END_DATE))
             .select("iata").collect()}
 
 coords = {r["iata"]: (float(r["lat"]), float(r["lon"]))
@@ -80,7 +80,7 @@ def fetch(batch):
     params = {
         "latitude": ",".join(str(coords[a][0]) for a in batch),
         "longitude": ",".join(str(coords[a][1]) for a in batch),
-        "start_date": START_DATE, "end_date": END_DATE,
+        "start_date": WEATHER_START_DATE, "end_date": WEATHER_END_DATE,
         "hourly": ",".join(WEATHER_VARS),
         "timezone": "UTC",                 # timezone work happens on the flight side
     }
@@ -95,7 +95,7 @@ for i in range(0, len(todo), WEATHER_BATCH_SIZE):
     batch = todo[i:i + WEATHER_BATCH_SIZE]
     results = fetch(batch)
     assert len(results) == len(batch), "Open-Meteo returned an unexpected number of locations"
-    rows = [(a, coords[a][0], coords[a][1], START_DATE, END_DATE, json.dumps(res))
+    rows = [(a, coords[a][0], coords[a][1], WEATHER_START_DATE, WEATHER_END_DATE, json.dumps(res))
             for a, res in zip(batch, results)]
     (spark.createDataFrame(rows, "iata string, lat double, lon double, start_date string, end_date string, raw_json string")
         .withColumn("_fetched_at", F.current_timestamp())
@@ -111,5 +111,7 @@ for i in range(0, len(todo), WEATHER_BATCH_SIZE):
 
 # COMMAND ----------
 
-w = spark.table(WEATHER)
-print("rows:", w.count(), "distinct airports:", w.select("iata").distinct().count())
+w = spark.table(WEATHER).filter(
+    (F.col("start_date") == WEATHER_START_DATE) & (F.col("end_date") == WEATHER_END_DATE))
+print("current-range rows:", w.count(), "distinct airports:", w.select("iata").distinct().count())
+print("all rows incl. superseded ranges:", spark.table(WEATHER).count())

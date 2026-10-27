@@ -57,5 +57,27 @@ used the OpenFlights coordinates (difference immaterial at ERA5 resolution).
 shifts times in the spring gap forward. January data never exercises this; it
 must be re-checked before extending the date range across March or November.
 
+## Silver: weather join
+
+**Weather is fetched for the flight range padded by one day each side.**
+Flight dates are local, weather is UTC. Late-evening US departures on the last
+day are already the next UTC day; early departures from Guam (UTC+10) on the
+first day are the previous UTC day. Found by reasoning before the first join,
+not by observing misses. Superseded unpadded rows are kept in bronze for
+provenance; silver reads only the current range.
+
+**Join = exact match on the hour containing the scheduled departure
+(truncate, not round).** Rounding to the nearest hour would attach weather
+observed up to 30 minutes after the planned departure, information a
+pre-departure model does not have. Cost: up to 59 minutes of staleness.
+
+**Missing weather: rows kept, `wx_matched = false`.** Hit rate must be at least
+99.5% (`WEATHER_HIT_RATE_MIN`) or the run halts. Whether to impute or exclude
+the remainder is a Phase 5 decision.
+
+**One `silver.flights_wx` table holds all statuses.** Cancelled flights keep
+their weather so cancellations can be analysed against conditions;
+`flight_status` separates them for OTP.
+
 ## Open
-- Weather join tolerance and missing-weather handling (Phase 3).
+- Impute vs exclude for flights with no weather (Phase 5).
