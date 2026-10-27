@@ -153,5 +153,17 @@ random validation split, which is not chronological and likely overfits the
 training period; (4) the strongest legitimate predictor, the inbound aircraft's
 delay, is not in the feature set.
 
+## Model iteration 2 (fixes to my own first-run mistakes)
+
+**A rate needs at least 7 distinct days of history (`HIST_MIN_DAYS`), not just
+20 flights.** With the first version, a 3-day-old rate was a snapshot of one
+weather regime and meant something different from a 25-day rate in the test
+week. The cold-start days (first 7) are excluded from training and printed.
+
+**Number of boosting trees is chosen on the chronological validation window.**
+`HistGradientBoostingClassifier(early_stopping=True)` validates on a random
+10% of the training rows, a random split by another name. Hyperparameters were
+fixed in advance at deliberately low capacity; none were tuned on the test week.
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).

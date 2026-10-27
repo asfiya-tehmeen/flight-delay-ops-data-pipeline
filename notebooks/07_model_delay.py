@@ -37,7 +37,14 @@ LABEL = "label_arr_delayed15"
 pdf = spark.table(f"{GOLD}.feat_delay_model").toPandas()
 pdf["dep_date_utc"] = pd.to_datetime(pdf["dep_date_utc"])
 
-train = pdf[pdf.dep_date_utc <= TRAIN_END]
+# Cold start: until HIST_MIN_DAYS of arrivals exist there is no usable history,
+# so those first days are not used for training (test/val have full history).
+first_day = pdf.dep_date_utc.min()
+warm_from = first_day + pd.Timedelta(days=HIST_MIN_DAYS)
+n_cold = int((pdf.dep_date_utc < warm_from).sum())
+print(f"cold-start rows excluded from training: {n_cold:,} (before {warm_from.date()})")
+
+train = pdf[(pdf.dep_date_utc <= TRAIN_END) & (pdf.dep_date_utc >= warm_from)]
 val = pdf[(pdf.dep_date_utc > TRAIN_END) & (pdf.dep_date_utc <= VAL_END)]
 test = pdf[pdf.dep_date_utc >= TEST_START]
 for n, d in (("train", train), ("val", val), ("test", test)):
@@ -126,17 +133,33 @@ logreg = Pipeline([
     ("clf", LogisticRegression(max_iter=500, C=0.5)),
 ])
 
-# HistGradientBoosting handles NULL history natively (cold start), so no imputing.
-gbm = Pipeline([
+# HistGradientBoosting handles NULL history natively, so no imputing.
+# Number of trees is chosen on the CHRONOLOGICAL validation window, not by the
+# built-in early stopping, which holds out a random slice of the training
+# period and so rewards fitting that period (the future-leaking split we avoid).
+# Hyperparameters below were fixed a priori, deliberately low capacity because
+# the test period is a different weather regime from the training period.
+def make_prep():
     # categoricals come out first (columns 0-2), numerics pass through after
-    ("prep", ColumnTransformer(
+    return ColumnTransformer(
         [("cat", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1), CATEGORICAL)],
-        remainder="passthrough")),
-    ("clf", HistGradientBoostingClassifier(
-        max_iter=300, learning_rate=0.08, max_leaf_nodes=31, early_stopping=True,
-        validation_fraction=0.1, random_state=0,
-        categorical_features=[0, 1, 2])),
-])
+        remainder="passthrough")
+
+def make_gbm(n_trees):
+    return HistGradientBoostingClassifier(
+        max_iter=n_trees, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=200,
+        l2_regularization=1.0, early_stopping=False, random_state=0,
+        categorical_features=[0, 1, 2])
+
+probe_prep = make_prep()
+Xtr_t, Xva_t = probe_prep.fit_transform(Xtr), probe_prep.transform(Xva)
+probe = make_gbm(400).fit(Xtr_t, ytr)
+val_ap = [average_precision_score(yva, p[:, 1]) for p in probe.staged_predict_proba(Xva_t)]
+best_trees = int(np.argmax(val_ap)) + 1
+print(f"trees chosen on validation: {best_trees} (validation AUC-PR {max(val_ap):.4f}; "
+      f"at 400 trees {val_ap[-1]:.4f})")
+
+gbm = Pipeline([("prep", make_prep()), ("clf", make_gbm(best_trees))])
 
 fitted = {}
 for name, model in (("logistic_regression", logreg), ("gradient_boosting", gbm)):
@@ -145,7 +168,8 @@ for name, model in (("logistic_regression", logreg), ("gradient_boosting", gbm))
         thr = best_f1_threshold(yva, model.predict_proba(Xva)[:, 1])
         res = evaluate(name, yte, model.predict_proba(Xte)[:, 1], thr)
         mlflow.log_params({"model": name, "n_train": len(Xtr), "train_end": TRAIN_END,
-                           "test_start": TEST_START, "features": ",".join(FEATURES)})
+                           "test_start": TEST_START, "features": ",".join(FEATURES),
+                           "hist_min_days": HIST_MIN_DAYS, "gbm_trees": best_trees})
         mlflow.log_metrics({k: v for k, v in res.items()})
         mlflow.log_metric("baseline_auc_pr", results["baseline_trailing_rate"]["auc_pr"])
         try:

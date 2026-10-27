@@ -56,6 +56,9 @@ ARR_TIME_MISMATCH_TOL = 0.01           # derived dest-local arrival vs CRSArrTim
 # Model features / evaluation. Label = arrival delay of 15+ minutes (BTS ArrDel15).
 HIST_WINDOW_DAYS = 30        # trailing window for historical delay rates
 HIST_MIN_N = 20              # fewer prior flights than this -> rate is NULL, not 0
+# ASSUMPTION: a rate built from 1-3 days is a snapshot of one weather regime, not
+# a base rate. Require this many distinct prior arrival days, else NULL.
+HIST_MIN_DAYS = 7
 
 # ASSUMPTION: chronological split by scheduled departure date (UTC), one month.
 # A 1-day gap before test avoids train labels overlapping the test period.

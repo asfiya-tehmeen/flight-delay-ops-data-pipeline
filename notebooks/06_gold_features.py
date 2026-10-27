@@ -91,11 +91,13 @@ def trailing(df, keys, name):
            .filter((F.col("arr_date_utc") >= F.date_sub("dep_date_utc", HIST_WINDOW_DAYS))
                    & (F.col("arr_date_utc") <= F.date_sub("dep_date_utc", 1)))
            .groupBy(*keys, "dep_date_utc")
-           .agg(F.sum("_n").alias(f"hist_{name}_n"), F.sum("_d").alias("_dsum")))
+           .agg(F.sum("_n").alias(f"hist_{name}_n"), F.sum("_d").alias("_dsum"),
+                F.countDistinct("arr_date_utc").alias("_days")))
     agg = agg.withColumn(
         f"hist_{name}_rate",
-        F.when(F.col(f"hist_{name}_n") >= HIST_MIN_N, F.col("_dsum") / F.col(f"hist_{name}_n"))
-    ).drop("_dsum")
+        F.when((F.col(f"hist_{name}_n") >= HIST_MIN_N) & (F.col("_days") >= HIST_MIN_DAYS),
+               F.col("_dsum") / F.col(f"hist_{name}_n"))
+    ).drop("_dsum", "_days")
     out = df.join(agg, keys + ["dep_date_utc"], "left")
     return out.withColumn(f"hist_{name}_n", F.coalesce(F.col(f"hist_{name}_n"), F.lit(0)))
 
@@ -174,6 +176,11 @@ display(ft.groupBy(F.when(F.col("dep_date_utc") <= TRAIN_END, "train")
 
 # independent recompute for one sample flight
 s = ft.filter("hist_route_rate IS NOT NULL").orderBy(F.desc("hist_route_n")).limit(1).collect()[0]
+# also: no rate may exist before HIST_MIN_DAYS of history have accumulated
+first_day = ft.agg(F.min("dep_date_utc")).first()[0]
+early = ft.filter((F.col("dep_date_utc") < F.date_add(F.lit(first_day), HIST_MIN_DAYS))
+                  & F.col("hist_route_rate").isNotNull()).count()
+assert early == 0, f"{early} rows have a route rate with < {HIST_MIN_DAYS} days of history"
 route = f"{s['origin']}-{s['dest']}"
 d = s["dep_date_utc"]
 manual = (hist_src.filter((F.col("route") == route)
