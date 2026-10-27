@@ -138,5 +138,20 @@ the model), and the test week is a single weather regime.
 A missed delay and a false alarm have different costs; F1 is a neutral default,
 not an operational recommendation.
 
+## Model result, first run (January 2024)
+
+Test = 25-31 Jan (+ the UTC-Feb-1 spill). AUC-PR: random 0.155, trailing-rate
+baseline 0.210, logistic regression 0.201, gradient boosting 0.184. **The
+models do not beat the baseline.** Using `dep_delay` alone (invalid, leaks)
+scores 0.833, which is why the leakage rules exist.
+
+Hypotheses, not yet tested: (1) regime shift - training contains the mid-Jan
+storms, the test week's delay rate falls 22% -> 9%; (2) in the first training
+days the "30-day" history is 1-5 days, so features mean something different in
+train and test; (3) HistGradientBoosting's built-in early stopping uses a
+random validation split, which is not chronological and likely overfits the
+training period; (4) the strongest legitimate predictor, the inbound aircraft's
+delay, is not in the feature set.
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).

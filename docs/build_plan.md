@@ -204,3 +204,5 @@ This log is worth as much as the code when someone asks how you work.
 | 2026-10-27 | 2 | `03_silver_flights`. Gates caught two issues: BIH missing timezone (override) and 16 arrival delays above my 2000-min bound (real winter-storm delays up to 3136 min; bound raised to 4320). Deliberate-corruption test confirmed gates fire. Split: 558,715 completed / 22,073 cancelled / 1,637 diverted. |
 | 2026-10-27 | 3 | Found before joining that UTC weather needs a padded date range (US evenings, Guam). Refetched. Hit rate 100%. `visibility` is 100% null in ERA5, dropped. |
 | 2026-10-27 | 4 | `05_gold_aggregates`: gates pass. Reconciled with DOT Air Travel Consumer Report Jan 2024: 582,425 scheduled and 22,073 cancelled match exactly; on-time 72.82% vs published 72.8% (denominator = all scheduled). |
+| 2026-10-27 | 5-6 | `06_gold_features` (allow-list + leakage assertion tested to fire) and `07_model_delay`. First run: neither model beats the trailing-rate baseline (AUC-PR 0.201 / 0.184 vs 0.210; random 0.155). Reported as-is; hypotheses in `decisions.md`. |
+| 2026-10-27 | 7 | `docs/dashboard_queries.sql` written (10 queries for a Databricks SQL dashboard). |
