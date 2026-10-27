@@ -165,5 +165,29 @@ week. The cold-start days (first 7) are excluded from training and printed.
 10% of the training rows, a random split by another name. Hyperparameters were
 fixed in advance at deliberately low capacity; none were tuned on the test week.
 
+### Iteration 2 result
+
+Test AUC-PR: random 0.155, baseline 0.210, logistic regression 0.197 (best
+model), gradient boosting below that. Still no win over the baseline; the two
+fixes changed the logistic result by 0.004. Validation AUC-PR for gradient
+boosting was 0.29 against under 0.20 on test: validation (21-23 Jan) sits next
+to the training period and is more delay-prone, and AUC-PR rises with
+prevalence, so the figures are not comparable, but the gap shows the model
+fitting short-term persistence that does not survive a week.
+
+Sliced, descriptively (the slices were chosen after seeing the test week, so
+this is not evidence): the model beats the baseline on 6 of 8 test days but
+loses the two highest-delay days that dominate the pooled score; wins on 7 of
+10 carriers but loses AA, UA, WN (about half of flights); wins in the night
+block only. At the best-F1 threshold precision is 0.168 against 0.155
+prevalence, so it is not operationally useful.
+
+**Decision: stop tuning on this test week.** Every further tweak would leak
+the test set into model selection. The honest result is a negative one with a
+tested explanation. What would plausibly change it, in order: more months
+(history and regimes), and the inbound aircraft's delay (a genuinely stronger
+signal, but it changes the prediction horizon from "known at schedule time" to
+"known when the aircraft lands", so it needs an explicit decision).
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).
