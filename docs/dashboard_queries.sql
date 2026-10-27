@@ -11,7 +11,8 @@
 -- On time = arrival delay < 15 minutes.
 -- Weather (c) Open-Meteo, CC BY 4.0. Flights: US DOT / BTS.
 
-USE CATALOG flight_ops;
+-- Every table is fully qualified (flight_ops.<schema>.<table>), so each query
+-- runs as-is in a dashboard dataset, where USE CATALOG is not applied.
 
 -- ============================================================
 -- 1. Headline KPIs  (counter tiles)
@@ -27,7 +28,7 @@ SELECT
                                                                     AS cancelled_pct,
   ROUND(100 * SUM(CASE WHEN flight_status = 'diverted'  THEN 1 ELSE 0 END) / COUNT(*), 2)
                                                                     AS diverted_pct
-FROM gold.fct_flight_performance;
+FROM flight_ops.gold.fct_flight_performance;
 
 -- ============================================================
 -- 2. Daily trend  (line chart: x = flight_date)
@@ -40,7 +41,7 @@ SELECT
   ROUND(100 * SUM(CASE WHEN flight_status = 'cancelled' THEN 1 ELSE 0 END) / COUNT(*), 2)
                                                                              AS cancelled_pct,
   ROUND(AVG(CASE WHEN flight_status = 'completed' THEN arr_delay_min END), 1) AS avg_arr_delay_min
-FROM gold.fct_flight_performance
+FROM flight_ops.gold.fct_flight_performance
 GROUP BY flight_date
 ORDER BY flight_date;
 
@@ -56,7 +57,7 @@ SELECT
   ROUND(100 * cancel_rate, 2)                          AS cancelled_pct,
   median_arr_delay_min,
   avg_arr_delay_min
-FROM gold.agg_carrier_otp
+FROM flight_ops.gold.agg_carrier_otp
 ORDER BY flights_scheduled DESC;
 
 -- ============================================================
@@ -68,7 +69,7 @@ SELECT
   ROUND(100 * flights_on_time / flights_scheduled, 2)  AS on_time_pct_scheduled,
   ROUND(100 * cancel_rate, 2)                          AS cancelled_pct,
   median_arr_delay_min
-FROM gold.agg_route_otp
+FROM flight_ops.gold.agg_route_otp
 WHERE flights_scheduled >= 200
 ORDER BY on_time_pct_scheduled ASC
 LIMIT 15;
@@ -83,7 +84,7 @@ SELECT
   ROUND(100 * on_time_rate, 2)  AS departure_on_time_pct,
   ROUND(100 * flights_cancelled / flights_scheduled, 2) AS cancelled_pct,
   median_delay_min
-FROM gold.agg_airport_otp
+FROM flight_ops.gold.agg_airport_otp
 WHERE role = 'departure'
 ORDER BY flights_scheduled DESC
 LIMIT 20;
@@ -96,7 +97,7 @@ SELECT
   flights_scheduled,
   ROUND(100 * flights_on_time / flights_scheduled, 2)  AS on_time_pct_scheduled,
   ROUND(100 * cancel_rate, 2)                          AS cancelled_pct
-FROM gold.agg_time_block_otp
+FROM flight_ops.gold.agg_time_block_otp
 ORDER BY dep_time_block;
 
 -- ============================================================
@@ -106,7 +107,7 @@ SELECT
   day_of_week,
   COUNT(*)                                                                   AS flights,
   ROUND(100 * SUM(CASE WHEN is_on_time THEN 1 ELSE 0 END) / COUNT(*), 2)     AS on_time_pct_scheduled
-FROM gold.fct_flight_performance
+FROM flight_ops.gold.fct_flight_performance
 GROUP BY day_of_week
 ORDER BY day_of_week;
 
@@ -125,7 +126,7 @@ SELECT
   ROUND(100 * SUM(CASE WHEN is_on_time THEN 1 ELSE 0 END) / COUNT(*), 2)     AS on_time_pct_scheduled,
   ROUND(100 * SUM(CASE WHEN flight_status = 'cancelled' THEN 1 ELSE 0 END) / COUNT(*), 2)
                                                                              AS cancelled_pct
-FROM gold.fct_flight_performance
+FROM flight_ops.gold.fct_flight_performance
 WHERE wx_matched
 GROUP BY 1
 ORDER BY 1;
@@ -142,7 +143,7 @@ SELECT
   END                                                                        AS gust_bucket,
   COUNT(*)                                                                   AS flights,
   ROUND(100 * SUM(CASE WHEN is_on_time THEN 1 ELSE 0 END) / COUNT(*), 2)     AS on_time_pct_scheduled
-FROM gold.fct_flight_performance
+FROM flight_ops.gold.fct_flight_performance
 WHERE wx_matched
 GROUP BY 1
 ORDER BY 1;
@@ -150,7 +151,7 @@ ORDER BY 1;
 -- ============================================================
 -- 10. Pipeline health  (small table: proves the quality story)
 -- ============================================================
-SELECT 'flights in bronze'      AS metric, COUNT(*) AS value FROM bronze.flights_raw
-UNION ALL SELECT 'flights in silver (all statuses)', COUNT(*) FROM silver.flights_wx
-UNION ALL SELECT 'flights with origin weather',      COUNT(*) FROM silver.flights_wx WHERE wx_matched
-UNION ALL SELECT 'flights in model feature table',   COUNT(*) FROM gold.feat_delay_model;
+SELECT 'flights in bronze'      AS metric, COUNT(*) AS value FROM flight_ops.bronze.flights_raw
+UNION ALL SELECT 'flights in silver (all statuses)', COUNT(*) FROM flight_ops.silver.flights_wx
+UNION ALL SELECT 'flights with origin weather',      COUNT(*) FROM flight_ops.silver.flights_wx WHERE wx_matched
+UNION ALL SELECT 'flights in model feature table',   COUNT(*) FROM flight_ops.gold.feat_delay_model;
