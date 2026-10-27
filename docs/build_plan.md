@@ -199,4 +199,7 @@ This log is worth as much as the code when someone asks how you work.
 
 | Date | Phase | What happened |
 |---|---|---|
-| 2026-10-27 | 0-1 | Wrote `config`, `00_setup`, `01_bronze_flights`, `02_bronze_weather` as Databricks-format notebooks. **Untested**: no workspace yet. Scope set to 1 month (Jan 2024). |
+| 2026-10-27 | 0-1 | Wrote `config`, `00_setup`, `01_bronze_flights`, `02_bronze_weather` as Databricks-format notebooks. Scope set to 1 month (Jan 2024). |
+| 2026-10-27 | 1 | Ran on Free Edition. BTS header has trailing space (`Operating_Airline `) that Delta rejects: fixed by trimming header. 582,425 flights, 350 airports; XWA missing coordinates, added override. |
+| 2026-10-27 | 2 | `03_silver_flights`. Gates caught two issues: BIH missing timezone (override) and 16 arrival delays above my 2000-min bound (real winter-storm delays up to 3136 min; bound raised to 4320). Deliberate-corruption test confirmed gates fire. Split: 558,715 completed / 22,073 cancelled / 1,637 diverted. |
+| 2026-10-27 | 3 | Found before joining that UTC weather needs a padded date range (US evenings, Guam). Refetched. Hit rate 100%. `visibility` is 100% null in ERA5, dropped. |

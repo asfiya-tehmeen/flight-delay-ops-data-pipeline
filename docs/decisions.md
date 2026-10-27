@@ -79,5 +79,13 @@ the remainder is a Phase 5 decision.
 their weather so cancellations can be analysed against conditions;
 `flight_status` separates them for OTP.
 
+**Visibility is dropped.** Measured 100% null in the ERA5 archive. The spec
+listed it as a useful delay predictor; it is not obtainable from this source.
+Bronze keeps the raw JSON including the empty field.
+
+**Hit rate was 100%** (582,425 / 582,425) after padding the date range. This
+proves coverage only; correctness of the UTC hour rests on the hand-trace of
+Phase 2 timestamps.
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).

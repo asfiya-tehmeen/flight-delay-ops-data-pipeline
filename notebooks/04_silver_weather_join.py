@@ -125,5 +125,5 @@ display(spark.table(f"{SILVER}.flights_wx")
         .filter("wx_matched")
         .orderBy(F.desc("wx_snowfall")).limit(10)
         .select("flight_date", "origin", "sched_dep_utc", "sched_dep_hour_utc",
-                "wx_temperature_2m", "wx_snowfall", "wx_wind_gusts_10m", "wx_visibility",
+                "wx_temperature_2m", "wx_snowfall", "wx_wind_gusts_10m",
                 "flight_status", "arr_delay_min"))

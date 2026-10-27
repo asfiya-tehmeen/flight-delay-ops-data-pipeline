@@ -55,9 +55,11 @@ ARR_TIME_MISMATCH_TOL = 0.01           # derived dest-local arrival vs CRSArrTim
 
 # Open-Meteo archive API (CC BY 4.0, attribution required).
 WEATHER_URL = "https://archive-api.open-meteo.com/v1/archive"
+# `visibility` was requested originally but the ERA5 archive returns it 100%
+# null, so it is dropped here (bronze still holds the all-null column).
 WEATHER_VARS = [
     "temperature_2m", "precipitation", "snowfall", "wind_speed_10m",
-    "wind_gusts_10m", "visibility", "cloud_cover",
+    "wind_gusts_10m", "cloud_cover",
 ]
 WEATHER_BATCH_SIZE = 10      # locations per request (comma-separated lat/lon)
 WEATHER_SLEEP_SEC = 2        # pause between requests, stay well under limits
