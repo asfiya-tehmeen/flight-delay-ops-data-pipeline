@@ -51,6 +51,9 @@ for fname in todo:
     )
     # BTS CSVs end each row with a trailing comma -> an empty unnamed column.
     df = df.drop(*[c for c in df.columns if c.startswith("_c")])
+    # Delta rejects whitespace in column names and BTS headers contain some
+    # (e.g. "Operating_Airline "). Trim the header only; values are untouched.
+    df = df.toDF(*[c.strip() for c in df.columns])
     (df.write.format("delta").mode("append")
        .option("mergeSchema", "true").saveAsTable(TABLE))
     print("loaded", fname)
