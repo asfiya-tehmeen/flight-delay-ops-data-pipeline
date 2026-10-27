@@ -199,4 +199,4 @@ This log is worth as much as the code when someone asks how you work.
 
 | Date | Phase | What happened |
 |---|---|---|
-| | | |
+| 2026-10-27 | 0-1 | Wrote `config`, `00_setup`, `01_bronze_flights`, `02_bronze_weather` as Databricks-format notebooks. **Untested**: no workspace yet. Scope set to 1 month (Jan 2024). |
