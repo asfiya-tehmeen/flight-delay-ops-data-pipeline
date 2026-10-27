@@ -53,6 +53,16 @@ ARR_DELAY_BOUNDS_MIN = (-180, 4320)    # outside this -> data error, not a delay
 ELAPSED_NULL_TOL = 0.001               # scheduled duration needed to derive arrival
 ARR_TIME_MISMATCH_TOL = 0.01           # derived dest-local arrival vs CRSArrTime
 
+# Model features / evaluation. Label = arrival delay of 15+ minutes (BTS ArrDel15).
+HIST_WINDOW_DAYS = 30        # trailing window for historical delay rates
+HIST_MIN_N = 20              # fewer prior flights than this -> rate is NULL, not 0
+
+# ASSUMPTION: chronological split by scheduled departure date (UTC), one month.
+# A 1-day gap before test avoids train labels overlapping the test period.
+TRAIN_END = "2024-01-20"     # train: <= this date
+VAL_END = "2024-01-23"       # validation (threshold choice): TRAIN_END < d <= VAL_END
+TEST_START = "2024-01-25"    # test: >= this date (2024-01-24 is the gap)
+
 # Open-Meteo archive API (CC BY 4.0, attribution required).
 WEATHER_URL = "https://archive-api.open-meteo.com/v1/archive"
 # `visibility` was requested originally but the ERA5 archive returns it 100%

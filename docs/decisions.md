@@ -101,5 +101,42 @@ cancellations and diversions.
 match to one decimal (AA 70.5, DL 77.8, AS cancel 11.9, UA cancel 6.9).
 Source: https://www.bts.gov/newsroom/air-travel-consumer-report-january-2024-numbers
 
+## Gold: features and model
+
+**Feature table is an allow-list, plus a second assertion against a list of
+known post-departure columns.** Why each excluded column would leak:
+
+| Column(s) | Why unusable before departure |
+|---|---|
+| `DepTime`, `DepDelay`, `DepDel15` | Recorded at departure. Departure delay is the strongest predictor of arrival delay, and exactly what a pre-departure forecast cannot have. |
+| `TaxiOut`, `WheelsOff` | Happen after pushback. |
+| `WheelsOn`, `TaxiIn`, `ArrTime`, `ActualElapsedTime`, `AirTime` | Describe the flight itself or the arrival. |
+| `ArrDelay`, `ArrDel15` | The target. |
+| `CarrierDelay`, `WeatherDelay`, `NASDelay`, `SecurityDelay`, `LateAircraftDelay` | Assigned retrospectively and populated only when arrival delay is 15+ minutes, so their presence encodes the label. |
+| `Cancelled`, `CancellationCode`, `Diverted` | Known only on the day; also define who is in the population. |
+| `actual_dep_utc`, `actual_arr_utc` | Derived from the delays above. |
+
+**Trailing history is keyed on actual arrival date and excludes the whole
+current UTC day.** A flight scheduled yesterday evening may land after today's
+flight departs, so its outcome is not yet known; excluding by scheduled date
+would leak. The window is 30 days and a rate with fewer than 20 prior flights
+is NULL (not 0), because "no history" is not "never late". An independent
+plain-filter recompute of one flight's history is asserted equal to the table.
+
+**Population = completed flights with origin weather.** Cancelled and diverted
+flights have no arrival delay to predict. Rows with no weather are excluded
+from the feature table only (count printed; zero in January 2024).
+
+**Label = arrival delay of 15+ minutes** (BTS `ArrDel15`).
+
+**Split: train to 20 Jan, validation 21-23 Jan (threshold choice only), gap
+24 Jan, test 25-31 Jan.** Chronological, never random. One month is a real
+limitation: the first days have no history, `month` is constant (dropped from
+the model), and the test week is a single weather regime.
+
+**Decision threshold is chosen on validation (max F1), then frozen for test.**
+A missed delay and a false alarm have different costs; F1 is a neutral default,
+not an operational recommendation.
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).
