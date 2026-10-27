@@ -58,6 +58,10 @@ if spark.catalog.tableExists(WEATHER):
 coords = {r["iata"]: (float(r["lat"]), float(r["lon"]))
           for r in spark.table(AIRPORTS).filter(F.col("iata").isin(list(origins))).collect()}
 
+for iata, (lat, lon, _tz) in AIRPORT_OVERRIDES.items():
+    if iata in origins and iata not in coords:
+        coords[iata] = (lat, lon)
+
 missing_coords = sorted(origins - set(coords))
 if missing_coords:
     print("WARNING no coordinates for:", missing_coords)  # investigate, do not drop silently

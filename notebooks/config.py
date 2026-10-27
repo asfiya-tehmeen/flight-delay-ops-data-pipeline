@@ -22,6 +22,23 @@ END_DATE = "2024-01-31"
 # ASSUMPTION: BTS convention, a flight is on time if it arrives < 15 min late.
 ON_TIME_THRESHOLD_MIN = 15
 
+# ASSUMPTION: airports missing from the OpenFlights snapshot, added by hand.
+# (lat, lon, IANA tz). Coordinates are approximate - ERA5 weather is a ~25 km
+# grid so ~1 km error is immaterial. VERIFY against an authoritative source.
+AIRPORT_OVERRIDES = {
+    # Williston Basin Intl, ND - opened 2019, replaced Sloulin Field (ISN)
+    "XWA": (48.2594, -103.7511, "America/Chicago"),
+}
+
+# ASSUMPTION: BTS flags records it considers duplicates in the `Duplicate`
+# column. Excluded from silver; the count removed is printed every run.
+EXCLUDE_DUPLICATE_FLAG = True
+
+# ASSUMPTIONS: quality-gate tolerances (fraction of rows) and plausible bounds.
+ARR_DELAY_BOUNDS_MIN = (-180, 2000)    # outside this -> data error, not a delay
+ELAPSED_NULL_TOL = 0.001               # scheduled duration needed to derive arrival
+ARR_TIME_MISMATCH_TOL = 0.01           # derived dest-local arrival vs CRSArrTime
+
 # Open-Meteo archive API (CC BY 4.0, attribution required).
 WEATHER_URL = "https://archive-api.open-meteo.com/v1/archive"
 WEATHER_VARS = [
