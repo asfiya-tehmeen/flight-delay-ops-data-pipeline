@@ -87,5 +87,19 @@ Bronze keeps the raw JSON including the empty field.
 proves coverage only; correctness of the UTC hour rests on the hand-trace of
 Phase 2 timestamps.
 
+## Gold: reporting
+
+**Two on-time rates, labelled.** BTS/DOT publish on-time as a share of all
+scheduled flights (cancelled and diverted count as not on time). Ours on the
+same basis: 72.82% vs published 72.8%. On-time as a share of *completed*
+flights is 75.91%, a different metric that answers "when it flies, is it on
+time?". Dashboards must state which one they show; the gap (3 pp) is the
+cancellations and diversions.
+
+**Reconciliation, January 2024:** scheduled flights 582,425 and cancellations
+22,073 match the DOT Air Travel Consumer Report exactly; carrier-level rates
+match to one decimal (AA 70.5, DL 77.8, AS cancel 11.9, UA cancel 6.9).
+Source: https://www.bts.gov/newsroom/air-travel-consumer-report-january-2024-numbers
+
 ## Open
 - Impute vs exclude for flights with no weather (Phase 5).

@@ -131,8 +131,11 @@ print("gold gates passed;", n_fct, "fact rows")
 
 # COMMAND ----------
 
-PUBLISHED = {"on_time_pct": None, "cancelled_pct": None}   # fill in, e.g. 78.9
-TOLERANCE_PP = 0.5    # ASSUMPTION: percentage points; carrier coverage can differ
+# DOT Air Travel Consumer Report, January 2024 (marketing network carriers):
+# 582,425 scheduled domestic flights, 22,073 (3.8%) cancelled, 72.8% on-time arrival.
+# Published on-time counts cancelled/diverted as NOT on time (denominator = scheduled).
+PUBLISHED = {"on_time_pct": 72.8, "cancelled_pct": 3.8, "scheduled": 582_425, "cancelled": 22_073}
+TOLERANCE_PP = 0.1    # published figures are rounded to 0.1
 
 t = fct.agg(
     F.count("*").alias("scheduled"),
@@ -153,13 +156,13 @@ for k, v in ours.items():
 if PUBLISHED["on_time_pct"] is None:
     print("\nPUBLISHED not filled in - reconciliation NOT done yet.")
 else:
-    diffs = {k: abs(v - PUBLISHED["on_time_pct"]) for k, v in ours.items() if k.startswith("on_time")}
-    print("\nabs diff vs published on-time:", {k: round(v, 2) for k, v in diffs.items()})
-    assert min(diffs.values()) <= TOLERANCE_PP, "on-time rate does not reconcile with BTS - investigate upstream"
-    if PUBLISHED["cancelled_pct"] is not None:
-        d = abs(ours["cancelled_pct (of scheduled)"] - PUBLISHED["cancelled_pct"])
-        assert d <= TOLERANCE_PP, f"cancellation rate off by {d:.2f} pp"
-    print("Reconciled within tolerance.")
+    assert t.scheduled == PUBLISHED["scheduled"], f"scheduled {t.scheduled} != published {PUBLISHED['scheduled']}"
+    assert t.cancelled == PUBLISHED["cancelled"], f"cancelled {t.cancelled} != published {PUBLISHED['cancelled']}"
+    on_time = ours["on_time_pct (of all scheduled, cancel/divert count as not on time)"]
+    assert abs(on_time - PUBLISHED["on_time_pct"]) <= TOLERANCE_PP, \
+        f"on-time {on_time:.2f} vs published {PUBLISHED['on_time_pct']} - investigate upstream"
+    assert abs(ours["cancelled_pct (of scheduled)"] - PUBLISHED["cancelled_pct"]) <= TOLERANCE_PP
+    print("Reconciled: flight counts exact, rates within", TOLERANCE_PP, "pp.")
 
 # COMMAND ----------
 
