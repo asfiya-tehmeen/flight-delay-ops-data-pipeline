@@ -28,6 +28,8 @@ ON_TIME_THRESHOLD_MIN = 15
 AIRPORT_OVERRIDES = {
     # Williston Basin Intl, ND - opened 2019, replaced Sloulin Field (ISN)
     "XWA": (48.2594, -103.7511, "America/Chicago"),
+    # Eastern Sierra Regional, Bishop CA - in OpenFlights but timezone missing
+    "BIH": (37.3731, -118.3636, "America/Los_Angeles"),
 }
 
 # ASSUMPTION: BTS flags records it considers duplicates in the `Duplicate`
@@ -35,7 +37,7 @@ AIRPORT_OVERRIDES = {
 EXCLUDE_DUPLICATE_FLAG = True
 
 # ASSUMPTIONS: quality-gate tolerances (fraction of rows) and plausible bounds.
-ARR_DELAY_BOUNDS_MIN = (-180, 2000)    # outside this -> data error, not a delay
+ARR_DELAY_BOUNDS_MIN = (-180, 4320)    # outside this -> data error, not a delay
 ELAPSED_NULL_TOL = 0.001               # scheduled duration needed to derive arrival
 ARR_TIME_MISMATCH_TOL = 0.01           # derived dest-local arrival vs CRSArrTime
 

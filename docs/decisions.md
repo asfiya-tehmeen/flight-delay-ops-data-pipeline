@@ -42,6 +42,17 @@ collide on the grain key but differ are NOT dropped, the grain gate fails.
 code columns, delay-group buckets. Not needed for reporting or features; still
 in bronze if wanted.
 
+**Arrival-delay bound is 72 hours (4320 min).** The first guess of 2000 min
+failed the gate on 16 real flights (Jan 2024 winter storm, max 3136 min / ~52 h),
+all American Airlines, with departure delay matching arrival delay within a
+few minutes, so genuine. A tighter bound would have silently dropped the
+worst real outcomes and biased delay averages down.
+
+**Airports with missing timezone in OpenFlights are overridden by hand**
+(`BIH`, Bishop CA, America/Los_Angeles). Override coordinates replace
+OpenFlights ones in the dimension; bronze weather for already-fetched airports
+used the OpenFlights coordinates (difference immaterial at ERA5 resolution).
+
 **DST:** `to_utc_timestamp` resolves the overlap hour to the earlier offset and
 shifts times in the spring gap forward. January data never exercises this; it
 must be re-checked before extending the date range across March or November.
