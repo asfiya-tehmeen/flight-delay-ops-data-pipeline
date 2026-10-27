@@ -206,4 +206,5 @@ This log is worth as much as the code when someone asks how you work.
 | 2026-10-27 | 4 | `05_gold_aggregates`: gates pass. Reconciled with DOT Air Travel Consumer Report Jan 2024: 582,425 scheduled and 22,073 cancelled match exactly; on-time 72.82% vs published 72.8% (denominator = all scheduled). |
 | 2026-10-27 | 5-6 | `06_gold_features` (allow-list + leakage assertion tested to fire) and `07_model_delay`. First run: neither model beats the trailing-rate baseline (AUC-PR 0.201 / 0.184 vs 0.210; random 0.155). Reported as-is; hypotheses in `decisions.md`. |
 | 2026-10-27 | 6 | Fixed my own errors (random-split early stopping, 1-day "history"). Result unchanged: best model (logistic) AUC-PR 0.197 vs baseline 0.210. Stopped tuning on the test week. Negative result recorded. |
+| 2026-10-27 | 7 | Dashboard built from the SQL datasets; README rewritten with real results, design-stage banner removed. Still open: external-schedule check of one flight, clean end-to-end re-run, GBM figure in README. |
 | 2026-10-27 | 7 | `docs/dashboard_queries.sql` written (10 queries for a Databricks SQL dashboard). |
