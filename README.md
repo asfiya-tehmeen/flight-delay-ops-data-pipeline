@@ -38,6 +38,38 @@ not on time (72.8%). Measured only over flights that actually completed, the
 rate is 75.9%. These answer different questions; the dashboard states which
 one each chart shows.
 
+### Databricks dashboard
+
+[Open the published Databricks dashboard](https://dbc-6bd3e602-0f8b.cloud.databricks.com/dashboardsv3/01f1d23e5c421890a733f9ca0ab9d8cf/published?o=7474651563378919)
+
+| Scheduled flights | On-time arrivals (% of scheduled) | Cancelled flights (%) |
+| --- | --- | --- |
+| ![Scheduled flights](dashboards-databricks/flights_scheduled.png) | ![On-time arrivals as a percentage of scheduled flights](dashboards-databricks/on_time_pct_scheduled.png) | ![Percentage of scheduled flights cancelled](dashboards-databricks/cancelled_pct.png) |
+
+![Additional cancellation-rate screenshot](dashboards-databricks/cancelled_pct%20%281%29.png)
+
+![Daily flight performance trend for January 2024](dashboards-databricks/daily%20trend.png)
+
+#### Performance by carrier, airport, route and departure time
+
+![Carrier performance](dashboards-databricks/carriers.png)
+
+![Airport performance](dashboards-databricks/airports.png)
+
+![Worst-performing routes](dashboards-databricks/worst%20routes.png)
+
+![Performance by time of day](dashboards-databricks/time%20of%20day.png)
+
+![Performance by day of week](dashboards-databricks/day%20of%20week.png)
+
+#### Weather and pipeline health
+
+![Flight performance by snowfall](dashboards-databricks/snowfall.png)
+
+![Flight performance by wind gusts](dashboards-databricks/wind%20gusts.png)
+
+![Pipeline health checks](dashboards-databricks/pipeline%20health.png)
+
 ### The model result, honestly
 
 Test period: 25-31 January, chronological split (train to 20 Jan, validation
